@@ -1,0 +1,30 @@
+name: Cloud Browser via NoVNC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-browser:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup Cloudflare Tunnel
+        uses: AnimMouse/setup-cloudflared@v2
+        
+      - name: Expose Webtop via Tunnel
+        uses: AnimMouse/setup-cloudflared/tunnel@v2
+        with:
+          url: http://localhost:3000
+    
+      - name: Start Webtop (Cloud Browser Container)
+        run: |
+          echo "Pulling and starting Webtop (Alpine XFCE + Chromium)..."
+          docker run \
+            --name=chromium \
+            --security-opt seccomp=unconfined \
+            -e PUID=1000 \
+            -e PGID=1000 \
+            -e TZ=Etc/UTC \
+            -p 3000:3000 \
+            -v /dev/shm:/dev/shm \
+            linuxserver/chromium:latest
